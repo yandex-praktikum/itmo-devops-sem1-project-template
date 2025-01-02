@@ -2,6 +2,7 @@ package service
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/csv"
 	"errors"
@@ -23,6 +24,7 @@ const CSVColumnsNumber = 5
 
 type MarketingRepository interface {
 	UploadProducts(ctx context.Context, products []model.Product) error
+	LoadProducts(ctx context.Context) ([]model.Product, error)
 }
 
 type MarketingService struct {
@@ -72,6 +74,66 @@ func (s *MarketingService) SaveProducts(ctx context.Context, file *multipart.Fil
 	}
 
 	return formLoadResult(products), nil
+}
+
+func (s *MarketingService) LoadProducts(ctx context.Context) ([]byte, error) {
+	products, err := s.repository.LoadProducts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("load products from db %w", err)
+	}
+
+	// Создаём буфер для CSV-данных
+	var csvBuffer bytes.Buffer
+	csvWriter := csv.NewWriter(&csvBuffer)
+
+	// Записываем заголовок
+	if err := csvWriter.Write([]string{"id", "name", "category", "price", "create_date"}); err != nil {
+		return nil, fmt.Errorf("write CSV header: %w", err)
+	}
+
+	// Записываем продукты
+	for _, product := range products {
+		record := []string{
+			fmt.Sprintf("%d", product.ID),
+			product.Name,
+			product.Category,
+			product.Price.String(),
+			product.CreateDate.Format(time.RFC3339),
+		}
+		if err := csvWriter.Write(record); err != nil {
+			return nil, fmt.Errorf("write CSV record: %w", err)
+		}
+	}
+
+	// Очищаем буфер CSV-писателя
+	csvWriter.Flush()
+
+	if err := csvWriter.Error(); err != nil {
+		return nil, fmt.Errorf("flush CSV writer: %w", err)
+	}
+
+	// Создаём буфер для ZIP-архива
+	var zipBuffer bytes.Buffer
+	zipWriter := zip.NewWriter(&zipBuffer)
+
+	// Добавляем CSV-файл в архив
+	csvFileInZip, err := zipWriter.Create("data.csv")
+	if err != nil {
+		return nil, fmt.Errorf("create file in ZIP archive: %w", err)
+	}
+
+	// Записываем CSV-данные в архив
+	if _, err := csvFileInZip.Write(csvBuffer.Bytes()); err != nil {
+		return nil, fmt.Errorf("write CSV data to ZIP archive: %w", err)
+	}
+
+	// Закрываем ZIP-архив
+	if err := zipWriter.Close(); err != nil {
+		return nil, fmt.Errorf("close ZIP archive: %w", err)
+	}
+
+	// Возвращаем ZIP-архив как []byte
+	return zipBuffer.Bytes(), nil
 }
 
 func processProductCSV(zipFile *zip.File) ([]model.Product, error) {

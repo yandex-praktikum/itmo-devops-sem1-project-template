@@ -6,7 +6,7 @@ create table if not exists products
     name             text,
     category         text,
     price            numeric(10,2),
-    create_date      timestamp,
+    create_date      date,
     constraint pk_products primary key (id)
 );
 -- +goose StatementEnd

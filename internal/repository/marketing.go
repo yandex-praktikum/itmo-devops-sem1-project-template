@@ -9,8 +9,12 @@ import (
 	"project_sem/internal/model"
 	"project_sem/internal/storage"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 )
+
+//nolint:gochecknoglobals // Настройка, переиспользуемая в рамках пакета
+var psql = getQueryBuilder()
 
 type MarketingRepository struct {
 	postgresPool *storage.PostgresPool
@@ -57,4 +61,37 @@ func (r *MarketingRepository) UploadProducts(ctx context.Context, products []mod
 	}
 
 	return nil
+}
+
+func (r *MarketingRepository) LoadProducts(ctx context.Context) ([]model.Product, error) {
+	queryBuilder := psql.Select(
+		"id",
+		"name",
+		"category",
+		"price",
+		"create_date",
+	).From("products")
+
+	query, _, err := queryBuilder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	rows, err := r.postgresPool.DB.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("get datasources list: %w", err)
+	}
+
+	defer rows.Close()
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.Product])
+	if err != nil {
+		return nil, fmt.Errorf("collect product rows: %w", err)
+	}
+
+	return products, nil
+}
+
+func getQueryBuilder() sq.StatementBuilderType {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 }

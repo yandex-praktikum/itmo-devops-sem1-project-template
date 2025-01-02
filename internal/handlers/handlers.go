@@ -11,6 +11,7 @@ import (
 
 type MarketingService interface {
 	SaveProducts(ctx context.Context, file *multipart.FileHeader) (*model.LoadResult, error)
+	LoadProducts(ctx context.Context) ([]byte, error)
 }
 
 type MarketingHandler struct {
@@ -28,6 +29,7 @@ func RegisterRoutes(
 	}
 
 	handler.app.Post("/api/v0/prices", handler.UploadProducts)
+	handler.app.Get("/api/v0/prices", handler.LoadProducts)
 
 	return handler
 }
