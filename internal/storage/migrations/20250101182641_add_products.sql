@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-create table if not exists products
+create table if not exists prices
 (
     id               int,
     name             text,
@@ -13,5 +13,5 @@ create table if not exists products
 
 -- +goose Down
 -- +goose StatementBegin
-drop table products;
+drop table prices;
 -- +goose StatementEnd

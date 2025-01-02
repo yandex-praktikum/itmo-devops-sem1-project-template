@@ -36,7 +36,7 @@ func (r *MarketingRepository) UploadProducts(ctx context.Context, products []mod
 		}
 	}()
 
-	insertProductQuery := `insert into "products" (id, name, category, price, create_date) values ($1, $2, $3, $4, $5)`
+	insertProductQuery := `insert into "prices" (id, name, category, price, create_date) values ($1, $2, $3, $4, $5)`
 
 	productStatement, err := tx.Prepare(ctx, "insertproduct", insertProductQuery)
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *MarketingRepository) LoadProducts(ctx context.Context) ([]model.Product
 		"category",
 		"price",
 		"create_date",
-	).From("products")
+	).From("prices")
 
 	query, _, err := queryBuilder.ToSql()
 	if err != nil {
