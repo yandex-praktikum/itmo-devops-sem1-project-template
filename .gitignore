@@ -1,0 +1,22 @@
+# IDE files and directories
+.idea/
+.vscode/*.json
+!.vscode/*.example.json
+
+# Build files
+bin/
+*.mk
+
+# Temp files and directories
+tmp/
+temp/
+
+# Code coverage files
+.coverage.*
+
+# Any TODO file
+*.todo
+*.TODO
+
+# vim swap files
+*.swp
