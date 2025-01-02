@@ -79,7 +79,7 @@ func (r *MarketingRepository) LoadProducts(ctx context.Context) ([]model.Product
 
 	rows, err := r.postgresPool.DB.Query(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("get datasources list: %w", err)
+		return nil, fmt.Errorf("get products list: %w", err)
 	}
 
 	defer rows.Close()
