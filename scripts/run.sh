@@ -32,10 +32,10 @@ fi
 echo "Обновление зависимостей"
 go mod tidy
 
-# Выполняем make lint-sources и проверяем вывод на ошибки
-echo "Запуск make lint-sources..."
-if ! make lint-sources; then
-  echo "Ошибка: make lint-sources завершился с ошибкой."
+# Выполняем make lint/sources и проверяем вывод на ошибки
+echo "Запуск make lint/sources..."
+if ! make lint/sources; then
+  echo "Ошибка: make lint/sources завершился с ошибкой."
   exit 1
 fi
 
