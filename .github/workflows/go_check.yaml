@@ -42,6 +42,9 @@ jobs:
         chmod +x scripts/prepare.sh
         chmod +x scripts/run.sh
         chmod +x scripts/tests.sh
+      env:
+        GOOSE_DRIVER: postgres
+        GOOSE_DBSTRING: postgresql://validator:val1dat0r@localhost:5432/project-sem-1?sslmode=disable
 
     - name: Prepare environment
       run: ./scripts/prepare.sh
