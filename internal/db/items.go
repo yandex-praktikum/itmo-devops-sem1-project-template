@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	insertQuery                string = `INSERT INTO prices (id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5)`
+	insertQuery                string = `INSERT INTO prices (external_id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5)`
 	selectTotalPriceQuery      string = `SELECT coalesce(sum(price), 0) FROM prices`
 	selectCategoriesCountQuery string = `SELECT count(distinct category) FROM prices`
-	selectQuery                string = `SELECT id, name, category, price, create_date FROM prices`
+	selectQuery                string = `SELECT external_id, name, category, price, create_date FROM prices`
 )
 
 type PricesRepoInterface interface {
