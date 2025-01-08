@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	insertQuery                string = `INSERT INTO prices (external_id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5)`
+	insertQuery                string = `INSERT INTO prices (id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id`
 	selectTotalPriceQuery      string = `SELECT coalesce(sum(price), 0) FROM prices`
 	selectCategoriesCountQuery string = `SELECT count(distinct category) FROM prices`
-	selectQuery                string = `SELECT external_id, name, category, price, create_date FROM prices`
+	selectQuery                string = `SELECT id, name, category, price, create_date FROM prices`
 )
 
 type PricesRepoInterface interface {
@@ -32,12 +32,13 @@ func (repo *PricesRepo) AddItems(items []models.Item) (*models.TotalItemsRespons
 
 	totalItems := 0
 	for _, item := range items {
-		_, err := tx.Exec(insertQuery, item.Id, item.Name, item.Category, item.Price, item.CreateDate)
+		result, err := tx.Exec(insertQuery, item.Id, item.Name, item.Category, item.Price, item.CreateDate)
 		if err != nil {
 			log.Printf("An error %s occured on adding item %v", err, item)
-		} else {
-			totalItems += 1
+			return nil, err
 		}
+		numRows, _ := result.RowsAffected()
+		totalItems += int(numRows)
 	}
 	log.Printf("%d items were added", totalItems)
 
