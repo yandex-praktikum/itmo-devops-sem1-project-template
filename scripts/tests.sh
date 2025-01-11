@@ -52,10 +52,30 @@ check_api_simple() {
     create_test_files 1
 
     echo -e "\nПроверка API (простой уровень)"
+
+    # Проверка таблицы prices перед тестами
+    echo "[tests.sh] Проверяем таблицу prices..."
+    PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c '\d prices' #td: add to log
+    if [ $? -eq 0 ]; then #td: add to log
+        echo "[tests.sh] Таблица prices существует."#td: add to log
+    else
+        echo "[tests.sh] Таблица prices отсутствует или её структура некорректна."#td: add to log
+        exit 1
+    fi
     
     # Проверка POST /api/v0/prices
     echo "Тестирование POST /api/v0/prices"
+
+    echo "Отправляем запрос на: ${API_HOST}/api/v0/prices" #td: add to log
+    echo "Отправляем файл: $TEST_ZIP" #td: add to log
+
     response=$(curl -s -F "file=@$TEST_ZIP" "${API_HOST}/api/v0/prices")
+
+    http_code=$(echo "$response" | grep "HTTP_CODE" | sed 's/HTTP_CODE://') #td: add to log
+    echo "Ответ сервера:" #td: add to log
+    echo "$response" | sed 's/HTTP_CODE:.*//' #td: add to log
+
+
     if [[ $response == *"total_items"* && $response == *"total_categories"* && $response == *"total_price"* ]]; then
         echo -e "${GREEN}✓ POST запрос успешен${NC}"
         
